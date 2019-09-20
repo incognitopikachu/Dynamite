@@ -1,14 +1,11 @@
-#import random
+import random
 
 
 class PaperBot:
     def __init__(self):
         pass
 
-    def Update(self, choice):
-        if choice == 'D':
-            self.dynamitesRemaining -= 1
-        return
+
 
     def getRoundCount(self, roundList):
         return len(roundList)
@@ -16,6 +13,7 @@ class PaperBot:
     def make_move(self, gamestate):
         roundList = gamestate['rounds']
         self.roundCount = self.getRoundCount(roundList)
+        self.dynamiteRemaining = self.howManyDynamites(roundList)
         drawCount = self.drawCount(roundList)
 
         if drawCount == 0:
@@ -23,11 +21,18 @@ class PaperBot:
         else:
             choice = self.drawSelection()
 
-        # self.Update(choice)
 
         return choice
 
+    def howManyDynamites(self, roundList):
+        dynamites = 100
+        for round in roundList:
+            if round['p1'] == 'D':
+                dynamites -= 1
+
     def drawSelection(self, gamestate):
+        if self.dynamiteRemaining > 0:
+            return 'D'
         return 'W'
 
     def randomChoice(self):
