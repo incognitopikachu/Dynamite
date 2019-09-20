@@ -28,7 +28,7 @@ class PaperBot:
         self.UpdateTrackers(previousRound, nextPreviousRound)
         self.drawCount = self.setDrawCount(roundList)
 
-        if self.roundCount < 100 or self.roundCount % 10 == 0:
+        if self.roundCount < 70 or self.roundCount % 10 == 0:
             choice = self.randomChoice(gamestate)
         else:
             self.getBestChoice(previousRound)
@@ -56,8 +56,9 @@ class PaperBot:
             self.opponentDynamiteRemaining -= 1
 
     def SelectLikelyResponce(self, previousRound):
+        weight = 8
         list = self.OpponentResponseTracker[previousRound['p1']]
-        for i in range(0,self.drawCount): # add weight to draw cunt tracking
+        for i in range(0, weight * self.drawCount): # add weight to draw cunt tracking
             list += self.OpponentChoiceTracker[self.drawCount]
 
         max = 0
