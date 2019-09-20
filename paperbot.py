@@ -1,56 +1,98 @@
-import random
-
-
 class PaperBot:
     def __init__(self):
+        self.roundCount = 0
+        self.dynamiteRemaining = 100
+        self.opponentDynamiteRemaining = 100
+        self.drawCount = 0
+        self.OpponentChoiceTracker = {}
+        for i in range(0, 10):
+            self.OpponentChoiceTracker[i] = []
+        self.OpponentResponseTracker = {'R':[], 'P':[], 'S':[], 'D':[], 'W':[]}
+        self.Response = {'R':'P', 'P':'S', 'S':'R', 'D':'W', 'W':'P'}
         pass
 
 
-
-    def getRoundCount(self, roundList):
-        return len(roundList)
-
     def make_move(self, gamestate):
         roundList = gamestate['rounds']
-        self.roundCount = self.getRoundCount(roundList)
-        self.dynamiteRemaining = self.howManyDynamites(roundList)
-        drawCount = self.drawCount(roundList)
+        roundList.reverse()
 
-        if drawCount == 0:
-            choice = self.rockPaperScissors(roundList)
+        if self.roundCount == 0 or 1:
+            self.roundCount += 1
+            return self.randomChoice(gamestate)
+
+        self.roundCount += 1
+
+        previousRound = roundList[0]
+        nextPreviousRound = roundList[1]
+
+        self.UpdateTrackers(previousRound, nextPreviousRound)
+        self.drawCount = self.setDrawCount(roundList)
+
+        if self.roundCount < 100 or self.roundCount % 10 == 0:
+            choice = self.randomChoice(gamestate)
         else:
-            choice = self.drawSelection()
-
+            self.getBestChoice(previousRound)
 
         return choice
 
-    def howManyDynamites(self, roundList):
-        dynamites = 100
-        for round in roundList:
-            if round['p1'] == 'D':
-                dynamites -= 1
+    def getBestChoice(self, previousRound):
+        choice = self.Response[self.SelectLikelyResponce(previousRound)]
 
-    def drawSelection(self, gamestate):
-        if self.dynamiteRemaining > 0:
-            return 'D'
+        # take into account dynamite limit
+        if choice == 'W' and self.opponentDynamiteRemaining == 0:
+            choice = 'D'
+        if choice == 'D' and self.dynamiteRemaining == 0:
+            choice = 'R'
+
+        return choice
+
+    def UpdateTrackers(self, previousRound, nextPreviousRound):
+        # track what opponent did in response to draw
+        self.OpponentChoiceTracker[self.drawCount].append(previousRound['p2'])
+        self.OpponentResponseTracker[nextPreviousRound['p1']].append(previousRound['p2'])
+        if previousRound['p1'] == 'D':
+            self.dynamiteRemaining -= 1
+        if previousRound['p2'] == 'D':
+            self.opponentDynamiteRemaining -= 1
+
+    def SelectLikelyResponce(self, previousRound):
+        list = self.OpponentResponseTracker[previousRound['p1']]
+        for i in range(0,self.drawCount): # add weight to draw cunt tracking
+            list += self.OpponentChoiceTracker[self.drawCount]
+
+        max = 0
+        # todo track other likely moves
+        for key in self.OpponentResponseTracker.keys():
+            if list.count(key) > max:
+                mostLikelyMove = key
+                max = list.count(key)
+
+        return mostLikelyMove
+
+    def drawSelection(self, gamestate, roundList):
+
         return 'W'
 
-    def randomChoice(self):
-        choices = ['R', 'P', 'S']
-        #choice = choices[random.randint(0, 2)]
-        return choices[1]
+    def randomNumber(self, gamestate, range, start=0):
+        randomHash = hash(str(gamestate))
+        randomNumber = randomHash % range
+        return randomNumber + start
 
-    def rockPaperScissors(self, roundList):
+    def randomChoice(self, gamestate):
+        choices = ['R', 'P', 'S']
+        choice = choices[self.randomNumber(gamestate, 3)]
+        return choice
+
+    def rockPaperScissors(self, gamestate, roundList):
         if self.roundCount < 10: # return random while getting data
             return self.randomChoice()
 
         choice = 'R'
         return choice
 
-    def drawCount(self, roundList):
+    def setDrawCount(self, roundList):
 
         draws = 0
-        roundList.reverse()
 
         for round in roundList:
             if round['p1'] != round['p2']:

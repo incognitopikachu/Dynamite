@@ -1,8 +1,10 @@
 from paperbot import PaperBot
 
-gamestate = {'rounds': [{ 'p1' : "R", 'p2' : "D" }, {   'p1' : "W", 'p2' : "S" }]}
+gamestate = {'rounds': [{ 'p1' : "a", 'p2' : "R" }, { 'p1' : "D", 'p2' : "a" }]}
+gamestate1 = {'rounds': [{}]}
 
 bot = PaperBot()
-play = bot.make_move(gamestate)
+bot.roundCount += 3
+play = bot.make_move(gamestate1)
 
 print(play)
