@@ -1,10 +1,8 @@
-import random
+#import random
 
 
 class PaperBot:
     def __init__(self):
-        self.dynamitesRemaining = 100
-        self.roundCount = 0
         pass
 
     def Update(self, choice):
@@ -30,12 +28,12 @@ class PaperBot:
         return choice
 
     def drawSelection(self, gamestate):
-        return
+        return 'W'
 
     def randomChoice(self):
         choices = ['R', 'P', 'S']
-        choice = choices[random.randint(0, 2)]
-        return choice
+        #choice = choices[random.randint(0, 2)]
+        return choices[1]
 
     def rockPaperScissors(self, roundList):
         if self.roundCount < 10: # return random while getting data
